@@ -4,6 +4,7 @@ import { ChangeEvent, useEffect, useState } from "react";
 import { StickyThead, TableWrapper, TableBody, ActionButton } from "./styles";
 
 type Advocate = {
+  id?: string;
   firstName: string;
   lastName: string;
   city: string;
@@ -123,9 +124,11 @@ export default function Home() {
           </StickyThead>
           <TableBody>
             {filteredAdvocates.map((advocate, idx) => {
-              const rowKey = `${advocate.phoneNumber ?? ""}-${
-                             advocate.lastName ?? "x"
-                           }-${idx}`;
+              const rowKey =
+                advocate.id ??
+                `${advocate.phoneNumber ?? ""}-${
+                  advocate.lastName ?? "x"
+                }-${idx}`;
               return (
                 <tr key={rowKey}>
                   <td>{advocate.firstName}</td>
@@ -133,8 +136,8 @@ export default function Home() {
                   <td>{advocate.city}</td>
                   <td>{advocate.degree}</td>
                   <td>
-                    {advocate.specialties.map((s) => (
-                      <div key={`${rowKey}-specialties`}>{s}</div>
+                    {advocate.specialties.map((s, i) => (
+                      <div key={`${rowKey}-spec-${i}`}>{s}</div>
                     ))}
                   </td>
                   <td>{advocate.yearsOfExperience}</td>
