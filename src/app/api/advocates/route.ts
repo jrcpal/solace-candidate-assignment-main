@@ -28,6 +28,11 @@ function normalizeRow(row: any) {
     }
   }
 
+  specialties = specialties
+    .map((s) => String(s ?? "").trim())
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+
   const yearsOfExperience =
     row.yearsOfExperience ?? row.years_of_experience ?? row.years ?? null;
   const phoneNumber = row.phoneNumber ?? row.phone_number ?? row.phone ?? null;
