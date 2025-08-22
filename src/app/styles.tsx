@@ -23,16 +23,22 @@ export const darkTheme = {
 };
 
 export const TableWrapper = styled.div`
+  background: rgba(202, 219, 202, 1);
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  max-height: calc(100vh - 160px);
   overflow-x: auto;
   overflow-y: auto;
-  max-height: calc(100vh - 160px); /* adjust as needed */
   -webkit-overflow-scrolling: touch;
-  overflow-x: auto;
-  background: #ffffff;
-  border-radius: 0.5rem;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
-  border: 1px solid rgba(15, 23, 42, 0.04);
+
+  box-shadow: 0 8px 30px rgba(2, 6, 23, 0.08);
+  border: 1px solid rgba(2, 6, 23, 0.04);
   transform: none;
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
 `;
 
 export const StickyThead = styled.thead`
@@ -40,11 +46,29 @@ export const StickyThead = styled.thead`
     position: sticky;
     top: 0;
     z-index: 20;
-    background: #ffffff;
-    padding: 0.5rem 0.75rem;
-    text-align: left;
-    box-shadow: 0 5px 6px rgba(0, 0, 0, 0.04);
-    backdrop-filter: blur(4px);
+    background: #f3f4f6;
+    color: #111827;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e5e7eb;
+  }
+
+  th:last-child {
+    border-right: none;
+  }
+`;
+
+export const TableBody = styled.tbody`
+  td {
+    padding: 0.75rem 1rem;
+    color: #0f172a;
+    border-right: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  td:last-child {
+    border-right: none;
+  }
+  tr:last-child td {
+    border-bottom: none;
   }
 `;
 
@@ -57,5 +81,4 @@ export const ActionButton = styled.button`
   font-weight: 600;
   cursor: pointer;
   transition: background 120ms ease, transform 80ms ease, box-shadow 120ms ease;
-  /* color/background handled by Tailwind via className */
 `;

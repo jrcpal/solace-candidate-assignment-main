@@ -1,7 +1,7 @@
 "use client";
 
 import { ChangeEvent, useEffect, useState } from "react";
-import { StickyThead, TableWrapper, ActionButton } from "./styles";
+import { StickyThead, TableWrapper, TableBody, ActionButton } from "./styles";
 
 type Advocate = {
   firstName: string;
@@ -95,7 +95,7 @@ export default function Home() {
               />
 
               <ActionButton
-                className="absolute inset-y-0 right-0 px-4 rounded-r-md bg-green-700 hover:bg-[#228B22] text-white h-full"
+                className="absolute inset-y-0 right-0 px-4 bg-green-700 hover:bg-[#228B22] text-white h-full rounded-r-md rounded-l-none"
                 onClick={onClick}
                 type="button"
                 aria-label="Search"
@@ -129,7 +129,7 @@ export default function Home() {
               <th>Phone Number</th>
             </tr>
           </StickyThead>
-          <tbody>
+          <TableBody>
             {filteredAdvocates.map((advocate, idx) => {
               const rowKey =
                 advocate.phoneNumber ?? `${advocate.lastName ?? "x"}-${idx}`;
@@ -149,7 +149,7 @@ export default function Home() {
                 </tr>
               );
             })}
-          </tbody>
+          </TableBody>
         </table>
       </TableWrapper>
     </main>
