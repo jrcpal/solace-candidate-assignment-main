@@ -1,7 +1,7 @@
 "use client";
 
 import { ChangeEvent, useEffect, useState } from "react";
-import { StickyThead, TableWrapper } from "./styles";
+import { StickyThead, TableWrapper, ActionButton } from "./styles";
 
 type Advocate = {
   firstName: string;
@@ -58,7 +58,9 @@ export default function Home() {
 
     const filteredAdvocates = advocates.filter((advocate) =>
       fieldValues(advocate).some((value) =>
-        value.toLowerCase().includes(inputLC)
+        String(value ?? "")
+          .toLowerCase()
+          .includes(inputLC)
       )
     );
 
@@ -73,25 +75,49 @@ export default function Home() {
 
   return (
     <main style={{ margin: "24px" }}>
-      <h1>Solace Advocates</h1>
+      <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-8">
+        Solace Advocates
+      </h1>
 
-      <div>
-        <div>
-          <label htmlFor="search">
-            Search advocates: <span id="search-term">{searchTerm}</span>{" "}
+      <div className="mb-6 w-full">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <label htmlFor="search" className="self-end">
+            Search advocates:
           </label>
-          <p></p>
-          <input
-            id="search"
-            aria-label="Search Advocates"
-            style={{ border: "1px solid black" }}
-            onChange={onChange}
-            value={searchTerm}
-            placeholder="Enter name, city, specialty, or years of experience here"
-          />
-          <button onClick={onClick}>Reset Search</button>
+
+          <div className="flex-1 relative">
+            <input
+              id="search"
+              aria-label="Search Advocates"
+              style={{ border: "1px solid black" }}
+              onChange={onChange}
+              value={searchTerm}
+              placeholder="Enter name, city, specialty, or years of experience here"
+              className="w-full sm:w-96 md:w-[40rem] px-4 py-1 pr-28 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 text-left"
+            />
+            <ActionButton
+              className="absolute right-1 top-1/2 transform -translate-y-1/2 px-3 py-1 rounded-md text-white bg-green-700 hover:bg-[#228B22] z-10"
+              onClick={onClick}
+              type="button"
+              aria-label="Search"
+            >
+              Search
+            </ActionButton>
+          </div>
+
+          <div className="flex-none">
+            <ActionButton
+              className="px-4 py-2 bg-gray-200 text-gray-800 hover:bg-gray-300 rounded-md"
+              onClick={onClick}
+              type="button"
+              aria-label="Reset Search"
+            >
+              Reset
+            </ActionButton>
+          </div>
         </div>
       </div>
+
       <TableWrapper>
         <table>
           <StickyThead>

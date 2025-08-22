@@ -40,10 +40,22 @@ export const StickyThead = styled.thead`
     position: sticky;
     top: 0;
     z-index: 20;
-    background: #ffffff; /* must be opaque */
+    background: #ffffff;
     padding: 0.5rem 0.75rem;
     text-align: left;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 5px 6px rgba(0, 0, 0, 0.04);
     backdrop-filter: blur(4px);
   }
+`;
+
+export const ActionButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease, transform 80ms ease, box-shadow 120ms ease;
+  /* color/background handled by Tailwind via className */
 `;
