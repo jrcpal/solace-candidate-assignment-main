@@ -67,10 +67,9 @@ export default function Home() {
     setFilteredAdvocates(filteredAdvocates);
   };
 
-  const onClick = () => {
-    console.log(advocates);
-    setFilteredAdvocates(advocates);
+  const onReset = () => {
     setSearchTerm("");
+    setFilteredAdvocates(advocates);
   };
 
   return (
@@ -81,37 +80,30 @@ export default function Home() {
 
       <div className="mb-6 w-full">
         <div className="flex flex-row items-center">
-          <label htmlFor="search" className="self-end"></label>
+          <label htmlFor="search"></label>
 
           <div className="flex-1 flex items-stretch sm:max-w-[45rem]">
-            <div className="relative grow">
+            <div className="relative flex-1">
               <input
                 id="search"
                 aria-label="Search Advocates"
                 onChange={onChange}
                 value={searchTerm}
                 placeholder="Enter advocate name, city, specialty, or years of experience here"
-                className="w-full h-10 px-4 pr-28 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                className="w-full h-10 px-4 pr-12 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
               />
 
-              <ActionButton
-                className="absolute inset-y-0 right-0 px-4 bg-green-700 hover:bg-[#228B22] text-white h-full rounded-r-md rounded-l-none"
-                onClick={onClick}
-                type="button"
-                aria-label="Search"
-              >
-                Search
-              </ActionButton>
+              {searchTerm ? (
+                <ActionButton
+                  className="absolute inset-y-0 right-0 px-3 bg-gray-200 text-gray-800 hover:bg-gray-300 rounded-r-md"
+                  onClick={onReset}
+                  type="button"
+                  aria-label="Reset Search"
+                >
+                  ✕
+                </ActionButton>
+              ) : null}
             </div>
-
-            <ActionButton
-              className="ml-2 px-4 h-10 bg-gray-200 text-gray-800 hover:bg-gray-300 rounded-md"
-              onClick={onClick}
-              type="button"
-              aria-label="Reset Search"
-            >
-              Reset
-            </ActionButton>
           </div>
         </div>
       </div>
@@ -131,8 +123,9 @@ export default function Home() {
           </StickyThead>
           <TableBody>
             {filteredAdvocates.map((advocate, idx) => {
-              const rowKey =
-                advocate.phoneNumber ?? `${advocate.lastName ?? "x"}-${idx}`;
+              const rowKey = `${advocate.phoneNumber ?? ""}-${
+                             advocate.lastName ?? "x"
+                           }-${idx}`;
               return (
                 <tr key={rowKey}>
                   <td>{advocate.firstName}</td>

@@ -1,8 +1,6 @@
-"useClient"; 
-
+"use client";
 
 import styled from "styled-components";
-import Link from "next/link"
 
 export const lightTheme = {
   background: "#fff",
