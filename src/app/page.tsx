@@ -80,34 +80,32 @@ export default function Home() {
       </h1>
 
       <div className="mb-6 w-full">
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-          <label htmlFor="search" className="self-end">
-            Search advocates:
-          </label>
+        <div className="flex flex-row items-center">
+          <label htmlFor="search" className="self-end"></label>
 
-          <div className="flex-1 relative">
-            <input
-              id="search"
-              aria-label="Search Advocates"
-              style={{ border: "1px solid black" }}
-              onChange={onChange}
-              value={searchTerm}
-              placeholder="Enter name, city, specialty, or years of experience here"
-              className="w-full sm:w-96 md:w-[40rem] px-4 py-1 pr-28 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 text-left"
-            />
-            <ActionButton
-              className="absolute right-1 top-1/2 transform -translate-y-1/2 px-3 py-1 rounded-md text-white bg-green-700 hover:bg-[#228B22] z-10"
-              onClick={onClick}
-              type="button"
-              aria-label="Search"
-            >
-              Search
-            </ActionButton>
-          </div>
+          <div className="flex-1 flex items-stretch sm:max-w-[45rem]">
+            <div className="relative grow">
+              <input
+                id="search"
+                aria-label="Search Advocates"
+                onChange={onChange}
+                value={searchTerm}
+                placeholder="Enter advocate name, city, specialty, or years of experience here"
+                className="w-full h-10 px-4 pr-28 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              />
 
-          <div className="flex-none">
+              <ActionButton
+                className="absolute inset-y-0 right-0 px-4 rounded-r-md bg-green-700 hover:bg-[#228B22] text-white h-full"
+                onClick={onClick}
+                type="button"
+                aria-label="Search"
+              >
+                Search
+              </ActionButton>
+            </div>
+
             <ActionButton
-              className="px-4 py-2 bg-gray-200 text-gray-800 hover:bg-gray-300 rounded-md"
+              className="ml-2 px-4 h-10 bg-gray-200 text-gray-800 hover:bg-gray-300 rounded-md"
               onClick={onClick}
               type="button"
               aria-label="Reset Search"
