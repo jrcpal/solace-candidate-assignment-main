@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { SunIcon, MoonIcon } from '@heroicons/react/24/outline';
 import { GlobalStyle, ThemeToggleContainer, ThemeToggleButton } from "./styles";
 
 interface ThemeContextType {
@@ -89,7 +90,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       <ThemeToggleContainer>
         <ThemeToggleButton $isDark={isDarkMode} onClick={toggleTheme}>
           <span className="icon">
-            {isDarkMode ? '☀️' : '🌙'}
+            {isDarkMode ? (
+              <SunIcon className="w-5 h-5" />
+            ) : (
+              <MoonIcon className="w-5 h-5" />
+            )}
           </span>
         </ThemeToggleButton>
       </ThemeToggleContainer>

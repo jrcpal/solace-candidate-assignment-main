@@ -195,6 +195,14 @@ export const NoResultsContainer = styled.div<{ $isDark?: boolean }>`
     display: block;
   }
 
+  .search-icon {
+    width: 2rem;
+    height: 2rem;
+    margin: 0 auto 1rem auto;
+    color: ${(props) => (props.$isDark ? "#6b7280" : "#9ca3af")};
+    display: block;
+  }
+
   .message {
     font-weight: 500;
     margin-bottom: 0.5rem;
@@ -241,6 +249,9 @@ export const ThemeToggleButton = styled.button<{ $isDark: boolean }>`
   .icon {
     font-size: 1.25rem;
     transition: transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   &:hover .icon {

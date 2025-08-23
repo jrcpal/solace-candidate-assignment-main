@@ -1,6 +1,7 @@
 "use client";
 
 import React, { ChangeEvent, useEffect, useRef, useState } from "react";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import {
   StickyThead,
   TableWrapper,
@@ -202,7 +203,7 @@ export default function Home() {
             <ErrorContainer $isDark={isDarkMode}>{error}</ErrorContainer>
           ) : advocates.length === 0 && hasInitiallyLoaded && searchTerm ? (
             <NoResultsContainer $isDark={isDarkMode}>
-              <span className="emoji">🔍</span>
+              <MagnifyingGlassIcon className="search-icon" />
               <div className="message">No advocates found</div>
               <div className="suggestion">
                 Try adjusting your search term "{searchTerm}" or clear the search to see all advocates.
