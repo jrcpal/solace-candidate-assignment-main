@@ -55,6 +55,33 @@ export const StickyThead = styled.thead`
   }
 `;
 
+export const SortableHeader = styled.th`
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: #e5e7eb !important;
+  }
+
+  .sort-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .sort-icon {
+    font-size: 0.75rem;
+    color: #6b7280;
+    transition: color 0.15s ease;
+
+    &.active {
+      color: #111827;
+    }
+  }
+`;
+
 export const TableBody = styled.tbody`
   td {
     padding: 0.75rem 1rem;

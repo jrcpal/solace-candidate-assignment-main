@@ -1,7 +1,7 @@
 "use client";
 
-import { ChangeEvent, useEffect, useRef, useState } from "react";
-import { StickyThead, TableWrapper, TableBody, ActionButton, LoadingContainer, LoadingSpinner, ErrorContainer, NoResultsContainer } from "./styles";
+import React, { ChangeEvent, useEffect, useRef, useState } from "react";
+import { StickyThead, TableWrapper, TableBody, ActionButton, LoadingContainer, LoadingSpinner, ErrorContainer, NoResultsContainer, SortableHeader } from "./styles";
 
 type Advocate = {
   id?: string;
@@ -14,11 +14,16 @@ type Advocate = {
   phoneNumber: string;
 };
 
+type SortField = keyof Advocate;
+type SortDirection = 'asc' | 'desc';
+
 export default function Home() {
   const [advocates, setAdvocates] = useState<Advocate[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [loading, setLoading] = useState(true); // Start with loading true
   const [error, setError] = useState<string>("");
+  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -79,6 +84,51 @@ export default function Home() {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     fetchAdvocates("");
   };
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      // Toggle direction if clicking the same field
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // New field, start with ascending
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return <span className="sort-icon">↕</span>;
+    }
+    return (
+      <span className={`sort-icon active`}>
+        {sortDirection === 'asc' ? '↑' : '↓'}
+      </span>
+    );
+  };
+
+  const sortedAdvocates = React.useMemo(() => {
+    if (!sortField) return advocates;
+    
+    return [...advocates].sort((a, b) => {
+      let aVal = a[sortField];
+      let bVal = b[sortField];
+      
+      // Handle arrays (specialties)
+      if (Array.isArray(aVal)) aVal = aVal.join(', ');
+      if (Array.isArray(bVal)) bVal = bVal.join(', ');
+      
+      // Convert to strings for comparison
+      const aStr = String(aVal || '').toLowerCase();
+      const bStr = String(bVal || '').toLowerCase();
+      
+      if (sortDirection === 'asc') {
+        return aStr.localeCompare(bStr);
+      } else {
+        return bStr.localeCompare(aStr);
+      }
+    });
+  }, [advocates, sortField, sortDirection]);
 
   return (
     <main style={{ margin: "24px" }}>
@@ -141,17 +191,52 @@ export default function Home() {
           <table>
             <StickyThead>
               <tr>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>City</th>
-                <th>Degree</th>
-                <th>Specialties</th>
-                <th>Years of Experience</th>
-                <th>Phone Number</th>
+                <SortableHeader onClick={() => handleSort('firstName')}>
+                  <div className="sort-content">
+                    <span>First Name</span>
+                    {getSortIcon('firstName')}
+                  </div>
+                </SortableHeader>
+                <SortableHeader onClick={() => handleSort('lastName')}>
+                  <div className="sort-content">
+                    <span>Last Name</span>
+                    {getSortIcon('lastName')}
+                  </div>
+                </SortableHeader>
+                <SortableHeader onClick={() => handleSort('city')}>
+                  <div className="sort-content">
+                    <span>City</span>
+                    {getSortIcon('city')}
+                  </div>
+                </SortableHeader>
+                <SortableHeader onClick={() => handleSort('degree')}>
+                  <div className="sort-content">
+                    <span>Degree</span>
+                    {getSortIcon('degree')}
+                  </div>
+                </SortableHeader>
+                <SortableHeader onClick={() => handleSort('specialties')}>
+                  <div className="sort-content">
+                    <span>Specialties</span>
+                    {getSortIcon('specialties')}
+                  </div>
+                </SortableHeader>
+                <SortableHeader onClick={() => handleSort('yearsOfExperience')}>
+                  <div className="sort-content">
+                    <span>Years of Experience</span>
+                    {getSortIcon('yearsOfExperience')}
+                  </div>
+                </SortableHeader>
+                <SortableHeader onClick={() => handleSort('phoneNumber')}>
+                  <div className="sort-content">
+                    <span>Phone Number</span>
+                    {getSortIcon('phoneNumber')}
+                  </div>
+                </SortableHeader>
               </tr>
             </StickyThead>
             <TableBody>
-              {advocates.map((advocate, idx) => {
+              {sortedAdvocates.map((advocate, idx) => {
                 const rowKey =
                   advocate.id ??
                   `${advocate.phoneNumber ?? ""}-${
