@@ -67,13 +67,13 @@ function dedupe(rows: any[]) {
 }
 
 export async function GET(req: Request) {
-  try {
-    const url = new URL(req.url);
-    const q = (url.searchParams.get("q") || "").trim();
-    const limit = Math.min(Number(url.searchParams.get("limit") || 50), 1000);
-    const offset = Math.max(Number(url.searchParams.get("offset") || 0), 0);
-    let total = 0;
+  const url = new URL(req.url);
+  const q = (url.searchParams.get("q") || "").trim();
+  const limit = Math.min(Number(url.searchParams.get("limit") || 50), 1000);
+  const offset = Math.max(Number(url.searchParams.get("offset") || 0), 0);
+  let total = 0;
 
+  try {
     let rawRows: any[] = [];
 
     if (q) {
@@ -92,7 +92,7 @@ export async function GET(req: Request) {
         ORDER BY last_name
         LIMIT $2 OFFSET $3
       `;
-      const res = await(db as any).query(sql, [term, limit, offset]);
+      const res = await (db as any).query(sql, [term, limit, offset]);
       rawRows = res?.rows ?? res ?? [];
       // Get total count for filtered query
       const countSql = `
@@ -106,7 +106,7 @@ export async function GET(req: Request) {
           OR years_of_experience::text ILIKE $1
           OR phone_number::text ILIKE $1
       `;
-      const countRes = await(db as any).query(countSql, [term]);
+      const countRes = await (db as any).query(countSql, [term]);
       total = Number(countRes?.rows?.[0]?.count ?? countRes?.[0]?.count ?? 0);
     } else {
       const sql = `
@@ -115,11 +115,11 @@ export async function GET(req: Request) {
         ORDER BY last_name
         LIMIT $1 OFFSET $2
       `;
-      const res = await(db as any).query(sql, [limit, offset]);
+      const res = await (db as any).query(sql, [limit, offset]);
       rawRows = res?.rows ?? res ?? [];
       // Get total count for unfiltered query
       const countSql = `SELECT COUNT(*) AS count FROM advocates`;
-      const countRes = await(db as any).query(countSql);
+      const countRes = await (db as any).query(countSql);
       total = Number(countRes?.rows?.[0]?.count ?? countRes?.[0]?.count ?? 0);
     }
 
@@ -136,14 +136,37 @@ export async function GET(req: Request) {
   } catch (err) {
     const raw = asArray(advocateData);
     const normalized = raw.map(normalizeRow);
-    const deduped = dedupe(normalized);
+    let deduped = dedupe(normalized);
+
+    if (q) {
+      const searchTerm = q.toLowerCase();
+      deduped = deduped.filter((advocate) => {
+        const searchableFields = [
+          advocate.firstName || "",
+          advocate.lastName || "",
+          advocate.city || "",
+          advocate.degree || "",
+          (advocate.specialties || []).join(" "),
+          advocate.yearsOfExperience || "",
+          advocate.phoneNumber || "",
+        ];
+
+        return searchableFields.some((field) =>
+          String(field).toLowerCase().includes(searchTerm)
+        );
+      });
+    }
+
     const withId = deduped.map((r) => ({
       ...r,
       id: r.id ?? crypto?.randomUUID?.() ?? `${r.phoneNumber}-${r.lastName}`,
     }));
-    return new Response(JSON.stringify({ data: withId, total: withId.length }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ data: withId, total: withId.length }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 }
