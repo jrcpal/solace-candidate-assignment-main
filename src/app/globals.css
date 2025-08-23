@@ -1,3 +1,32 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+    font-family: 'Mollie Glaston';
+    src: url('/fonts/mollie-glaston.ttf') format('truetype'),
+        url('/fonts/mollie-glaston.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Critical styles to prevent FOUC */
+body {
+    background-color: #ffffff;
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.2s ease;
+}
+
+/* Prevent flash of unstyled content */
+.loading-placeholder {
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Basic loading spinner animation */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
