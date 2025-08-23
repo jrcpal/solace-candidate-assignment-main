@@ -80,3 +80,68 @@ export const ActionButton = styled.button`
   cursor: pointer;
   transition: background 120ms ease, transform 80ms ease, box-shadow 120ms ease;
 `;
+
+export const LoadingContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  gap: 0.75rem;
+  color: #6b7280;
+  font-size: 1rem;
+  font-style: italic;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background-color: #fafafa;
+`;
+
+export const LoadingSpinner = styled.div`
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 3px solid #e5e7eb;
+  border-top: 3px solid #0a7753ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+
+export const ErrorContainer = styled.div`
+  text-align: center;
+  padding: 4rem;
+  color: #dc2626;
+  font-size: 1rem;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  background-color: #fef2f2;
+`;
+
+export const NoResultsContainer = styled.div`
+  text-align: center;
+  padding: 4rem;
+  color: #6b7280;
+  font-size: 1.1rem;
+  font-style: italic;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background-color: #f9fafb;
+  
+  .emoji {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+    display: block;
+  }
+  
+  .message {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+  
+  .suggestion {
+    font-size: 0.9rem;
+    opacity: 0.8;
+  }
+`;

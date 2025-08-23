@@ -1,7 +1,7 @@
 "use client";
 
 import { ChangeEvent, useEffect, useRef, useState } from "react";
-import { StickyThead, TableWrapper, TableBody, ActionButton } from "./styles";
+import { StickyThead, TableWrapper, TableBody, ActionButton, LoadingContainer, LoadingSpinner, ErrorContainer, NoResultsContainer } from "./styles";
 
 type Advocate = {
   id?: string;
@@ -17,7 +17,7 @@ type Advocate = {
 export default function Home() {
   const [advocates, setAdvocates] = useState<Advocate[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Start with loading true
   const [error, setError] = useState<string>("");
 
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
@@ -37,6 +37,7 @@ export default function Home() {
       const url = q
         ? `/api/advocates?q=${encodeURIComponent(q)}`
         : "/api/advocates";
+      
       const res = await fetch(url, { signal: controller.signal });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
@@ -81,7 +82,7 @@ export default function Home() {
 
   return (
     <main style={{ margin: "24px" }}>
-      <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-8">
+      <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-8" style={{ fontFamily: "Mollie Glaston, sans-serif" }}>
         Solace Advocates
       </h1>
 
@@ -117,11 +118,25 @@ export default function Home() {
 
       <TableWrapper>
         {loading && advocates.length === 0 ? (
-          <div style={{ padding: "2rem", textAlign: "center" }}>Loading...</div>
+          <LoadingContainer>
+            <LoadingSpinner />
+            Loading advocates...
+          </LoadingContainer>
         ) : error ? (
-          <div style={{ color: "red", padding: "2rem", textAlign: "center" }}>
+          <ErrorContainer>
             {error}
-          </div>
+          </ErrorContainer>
+        ) : advocates.length === 0 ? (
+          <NoResultsContainer>
+            <span className="emoji">🔍</span>
+            <div className="message">No advocates found</div>
+            <div className="suggestion">
+              {searchTerm 
+                ? `Try adjusting your search term "${searchTerm}" or clear the search to see all advocates.`
+                : "No advocates are currently available."
+              }
+            </div>
+          </NoResultsContainer>
         ) : (
           <table>
             <StickyThead>
