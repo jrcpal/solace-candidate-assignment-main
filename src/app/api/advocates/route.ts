@@ -72,11 +72,13 @@ export async function GET(req: Request) {
     const q = (url.searchParams.get("q") || "").trim();
     const limit = Math.min(Number(url.searchParams.get("limit") || 50), 1000);
     const offset = Math.max(Number(url.searchParams.get("offset") || 0), 0);
+    let total = 0;
 
     let rawRows: any[] = [];
 
     if (q) {
       const term = `%${q}%`;
+      // Get filtered rows
       const sql = `
         SELECT id, first_name, last_name, city, degree, specialties, years_of_experience, phone_number
         FROM advocates
@@ -86,12 +88,26 @@ export async function GET(req: Request) {
           OR degree ILIKE $1
           OR specialties::text ILIKE $1
           OR years_of_experience::text ILIKE $1
-          OR phone_number ILIKE $1
+          OR phone_number::text ILIKE $1
         ORDER BY last_name
         LIMIT $2 OFFSET $3
       `;
-      const res = await (db as any).query(sql, [term, limit, offset]);
+      const res = await(db as any).query(sql, [term, limit, offset]);
       rawRows = res?.rows ?? res ?? [];
+      // Get total count for filtered query
+      const countSql = `
+        SELECT COUNT(*) AS count
+        FROM advocates
+        WHERE first_name ILIKE $1
+          OR last_name ILIKE $1
+          OR city ILIKE $1
+          OR degree ILIKE $1
+          OR specialties::text ILIKE $1
+          OR years_of_experience::text ILIKE $1
+          OR phone_number::text ILIKE $1
+      `;
+      const countRes = await(db as any).query(countSql, [term]);
+      total = Number(countRes?.rows?.[0]?.count ?? countRes?.[0]?.count ?? 0);
     } else {
       const sql = `
         SELECT id, first_name, last_name, city, degree, specialties, years_of_experience, phone_number
@@ -99,8 +115,12 @@ export async function GET(req: Request) {
         ORDER BY last_name
         LIMIT $1 OFFSET $2
       `;
-      const res = await (db as any).query(sql, [limit, offset]);
+      const res = await(db as any).query(sql, [limit, offset]);
       rawRows = res?.rows ?? res ?? [];
+      // Get total count for unfiltered query
+      const countSql = `SELECT COUNT(*) AS count FROM advocates`;
+      const countRes = await(db as any).query(countSql);
+      total = Number(countRes?.rows?.[0]?.count ?? countRes?.[0]?.count ?? 0);
     }
 
     const normalized = asArray(rawRows).map(normalizeRow);
@@ -109,7 +129,7 @@ export async function GET(req: Request) {
       ...r,
       id: r.id ?? crypto?.randomUUID?.() ?? `${r.phoneNumber}-${r.lastName}`,
     }));
-    return new Response(JSON.stringify({ data: withId }), {
+    return new Response(JSON.stringify({ data: withId, total }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
@@ -121,7 +141,7 @@ export async function GET(req: Request) {
       ...r,
       id: r.id ?? crypto?.randomUUID?.() ?? `${r.phoneNumber}-${r.lastName}`,
     }));
-    return new Response(JSON.stringify({ data: withId }), {
+    return new Response(JSON.stringify({ data: withId, total: withId.length }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
