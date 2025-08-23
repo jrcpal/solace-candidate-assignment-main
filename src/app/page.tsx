@@ -35,19 +35,19 @@ type SortDirection = "asc" | "desc";
 export default function Home() {
   const [advocates, setAdvocates] = useState<Advocate[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [loading, setLoading] = useState(true); // Start with loading true
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
-  
+
   const { isDarkMode } = useTheme();
 
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const fetchAdvocates = async (q: string = "") => {
-    // Cancel previous request
+    // Prevent race conditions - if user types quickly, cancel the previous request to only process the most recent search and avoid stale results
     if (abortRef.current) {
       abortRef.current.abort();
     }
@@ -81,7 +81,7 @@ export default function Home() {
 
   useEffect(() => {
     fetchAdvocates();
-    // Cleanup on unmount
+    // Prevent memory leaks and hanging requests when component unmounts
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       if (abortRef.current) abortRef.current.abort();
@@ -94,7 +94,7 @@ export default function Home() {
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
-    // Debounce the search to avoid too many requests
+    // Debounce to avoid overwhelming the API with requests on every keystroke
     debounceRef.current = setTimeout(() => {
       fetchAdvocates(input);
     }, 300);
@@ -111,7 +111,6 @@ export default function Home() {
       // Toggle direction if clicking the same field
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
-      // New field, start with ascending
       setSortField(field);
       setSortDirection("asc");
     }
@@ -135,11 +134,11 @@ export default function Home() {
       let aVal = a[sortField];
       let bVal = b[sortField];
 
-      // Handle arrays (specialties)
+      // Handle arrays (specialties) - convert to sortable string format
       if (Array.isArray(aVal)) aVal = aVal.join(", ");
       if (Array.isArray(bVal)) bVal = bVal.join(", ");
 
-      // Convert to strings for comparison
+      // Convert to strings for comparison - ensures consistent sorting across mixed data types
       const aStr = String(aVal || "").toLowerCase();
       const bStr = String(bVal || "").toLowerCase();
 

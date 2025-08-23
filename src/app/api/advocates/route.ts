@@ -51,12 +51,11 @@ function normalizeRow(row: any) {
 }
 
 function dedupe(rows: any[]) {
-  // Only dedupe when the entire normalized row is identical.
+  // Remove duplicates to prevent showing the same advocate multiple times
   const seen = new Set<string>();
   const out: any[] = [];
   for (const r of rows) {
-    // JSON stringify the normalized object excluding `id` so differing ids
-    // (e.g. DB primary keys) don't prevent deduplication of identical rows.
+    // Exclude id from comparison since different data sources may have different IDs for the same person
     const { id, ...rest } = r;
     const key = JSON.stringify(rest);
     if (seen.has(key)) continue;
@@ -78,7 +77,7 @@ export async function GET(req: Request) {
 
     if (q) {
       const term = `%${q}%`;
-      // Get filtered rows
+      // Search across all fields using case-insensitive LIKE with wildcards
       const sql = `
         SELECT id, first_name, last_name, city, degree, specialties, years_of_experience, phone_number
         FROM advocates
