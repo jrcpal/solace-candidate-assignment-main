@@ -214,6 +214,144 @@ export const NoResultsContainer = styled.div<{ $isDark?: boolean }>`
   }
 `;
 
+export const ResponsiveContainer = styled.div`
+  @media (max-width: 768px) {
+    .desktop-table {
+      display: none;
+    }
+    .mobile-cards {
+      display: block;
+    }
+  }
+
+  @media (min-width: 769px) {
+    .desktop-table {
+      display: block;
+    }
+    .mobile-cards {
+      display: none;
+    }
+  }
+`;
+
+export const MobileCard = styled.div<{ $isDark?: boolean }>`
+  background: ${(props) => (props.$isDark ? "#1f2937" : "#ffffff")};
+  border: 1px solid ${(props) => (props.$isDark ? "#374151" : "#e5e7eb")};
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  .advocate-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    font-family: "Mollie Glaston", sans-serif;
+    color: ${(props) => (props.$isDark ? "#f9fafb" : "#111827")};
+    margin-bottom: 0.5rem;
+  }
+
+  .advocate-details {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid
+      ${(props) => (props.$isDark ? "#374151" : "#f3f4f6")};
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .detail-label {
+    font-weight: 500;
+    color: ${(props) => (props.$isDark ? "#9ca3af" : "#6b7280")};
+    font-size: 0.875rem;
+    min-width: 80px;
+  }
+
+  .detail-value {
+    color: ${(props) => (props.$isDark ? "#f3f4f6" : "#374151")};
+    text-align: right;
+    flex: 1;
+    margin-left: 1rem;
+  }
+
+  .specialties-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    justify-content: flex-end;
+  }
+
+  .specialty-tag {
+    background: ${(props) => (props.$isDark ? "#374151" : "#f3f4f6")};
+    color: ${(props) => (props.$isDark ? "#e5e7eb" : "#374151")};
+    padding: 0.125rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: none;
+  }
+
+  .phone-link {
+    color: ${(props) => (props.$isDark ? "#f3f4f6" : "#374151")};
+    text-decoration: none;
+
+    &:hover {
+      color: ${(props) => (props.$isDark ? "#60a5fa" : "#2563eb")};
+      text-decoration: underline;
+    }
+  }
+`;
+
+export const MobileSortControls = styled.div<{ $isDark?: boolean }>`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem 0;
+
+  @media (min-width: 769px) {
+    display: none;
+  }
+`;
+export const MobileSortButton = styled.button<{
+  $isDark?: boolean;
+  $active?: boolean;
+}>`
+  padding: 0.75rem;
+  border: 1px solid ${(props) => (props.$isDark ? "#374151" : "#d1d5db")};
+  border-radius: 12px;
+  background: ${(props) =>
+    props.$active ? "#228B22" : props.$isDark ? "#1f2937" : "#ffffff"};
+  color: ${(props) =>
+    props.$active ? "#ffffff" : props.$isDark ? "#f3f4f6" : "#374151"};
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+
+  &:hover {
+    background: ${(props) =>
+      props.$active ? "#1F7A1F" : props.$isDark ? "#374151" : "#f9fafb"};
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+`;
+
 export const ThemeToggleContainer = styled.div`
   position: fixed;
   top: 1.5rem;
