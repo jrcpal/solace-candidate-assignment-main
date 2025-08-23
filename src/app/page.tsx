@@ -40,6 +40,7 @@ export default function Home() {
   const [advocates, setAdvocates] = useState<Advocate[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string>("");
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
@@ -70,7 +71,12 @@ export default function Home() {
     const controller = new AbortController();
     abortRef.current = controller;
 
-    setLoading(true);
+    // Only show full loading state on initial load, use searching state for subsequent searches
+    if (!hasInitiallyLoaded) {
+      setLoading(true);
+    } else {
+      setSearching(true);
+    }
     setError("");
     try {
       const url = q
@@ -89,6 +95,7 @@ export default function Home() {
       console.error("Failed to load advocates:", err);
     } finally {
       setLoading(false);
+      setSearching(false);
       if (!hasInitiallyLoaded) {
         setHasInitiallyLoaded(true);
       }
@@ -188,6 +195,26 @@ export default function Home() {
                 }
                 $isDark={isDarkMode}
               />
+
+              {searching && (
+                <div
+                  style={{
+                    position: "absolute",
+                    right: searchTerm ? "3rem" : "1rem",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    pointerEvents: "none",
+                  }}
+                >
+                  <LoadingSpinner
+                    $isDark={isDarkMode}
+                    style={{
+                      width: "16px",
+                      height: "16px",
+                    }}
+                  />
+                </div>
+              )}
 
               {searchTerm ? (
                 <ActionButton

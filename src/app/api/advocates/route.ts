@@ -77,35 +77,84 @@ export async function GET(req: Request) {
 
     if (q) {
       const term = `%${q}%`;
-      // Search across all fields using case-insensitive LIKE with wildcards
-      const sql = `
-        SELECT id, first_name, last_name, city, degree, specialties, years_of_experience, phone_number
-        FROM advocates
-        WHERE first_name ILIKE $1
-          OR last_name ILIKE $1
-          OR city ILIKE $1
-          OR degree ILIKE $1
-          OR specialties::text ILIKE $1
-          OR years_of_experience::text ILIKE $1
-          OR phone_number::text ILIKE $1
-        ORDER BY last_name
-        LIMIT $2 OFFSET $3
-      `;
-      const res = await (db as any).query(sql, [term, limit, offset]);
+      const isNumericSearch = /^\d+$/.test(q.trim());
+      
+      let sql: string;
+      let params: any[];
+      
+      if (isNumericSearch) {
+        // For numeric searches, be more specific:
+        // - Exact match on years_of_experience
+        // - Still allow partial matches on text fields
+        // - Be more selective with phone numbers (only match if it's a significant part)
+        sql = `
+          SELECT id, first_name, last_name, city, degree, specialties, years_of_experience, phone_number
+          FROM advocates
+          WHERE years_of_experience = $1
+            OR first_name ILIKE $2
+            OR last_name ILIKE $2
+            OR city ILIKE $2
+            OR degree ILIKE $2
+            OR specialties::text ILIKE $2
+          ORDER BY 
+            CASE WHEN years_of_experience = $1 THEN 1 ELSE 2 END,
+            last_name
+          LIMIT $3 OFFSET $4
+        `;
+        params = [parseInt(q.trim()), term, limit, offset];
+      } else {
+        // For text searches, search across all fields normally
+        sql = `
+          SELECT id, first_name, last_name, city, degree, specialties, years_of_experience, phone_number
+          FROM advocates
+          WHERE first_name ILIKE $1
+            OR last_name ILIKE $1
+            OR city ILIKE $1
+            OR degree ILIKE $1
+            OR specialties::text ILIKE $1
+            OR years_of_experience::text ILIKE $1
+            OR phone_number::text ILIKE $1
+          ORDER BY last_name
+          LIMIT $2 OFFSET $3
+        `;
+        params = [term, limit, offset];
+      }
+      
+      const res = await (db as any).query(sql, params);
       rawRows = res?.rows ?? res ?? [];
+      
       // Get total count for filtered query
-      const countSql = `
-        SELECT COUNT(*) AS count
-        FROM advocates
-        WHERE first_name ILIKE $1
-          OR last_name ILIKE $1
-          OR city ILIKE $1
-          OR degree ILIKE $1
-          OR specialties::text ILIKE $1
-          OR years_of_experience::text ILIKE $1
-          OR phone_number::text ILIKE $1
-      `;
-      const countRes = await (db as any).query(countSql, [term]);
+      let countSql: string;
+      let countParams: any[];
+      
+      if (isNumericSearch) {
+        countSql = `
+          SELECT COUNT(*) AS count
+          FROM advocates
+          WHERE years_of_experience = $1
+            OR first_name ILIKE $2
+            OR last_name ILIKE $2
+            OR city ILIKE $2
+            OR degree ILIKE $2
+            OR specialties::text ILIKE $2
+        `;
+        countParams = [parseInt(q.trim()), term];
+      } else {
+        countSql = `
+          SELECT COUNT(*) AS count
+          FROM advocates
+          WHERE first_name ILIKE $1
+            OR last_name ILIKE $1
+            OR city ILIKE $1
+            OR degree ILIKE $1
+            OR specialties::text ILIKE $1
+            OR years_of_experience::text ILIKE $1
+            OR phone_number::text ILIKE $1
+        `;
+        countParams = [term];
+      }
+      
+      const countRes = await (db as any).query(countSql, countParams);
       total = Number(countRes?.rows?.[0]?.count ?? countRes?.[0]?.count ?? 0);
     } else {
       const sql = `
@@ -138,22 +187,55 @@ export async function GET(req: Request) {
     let deduped = dedupe(normalized);
 
     if (q) {
-      const searchTerm = q.toLowerCase();
-      deduped = deduped.filter((advocate) => {
-        const searchableFields = [
-          advocate.firstName || "",
-          advocate.lastName || "",
-          advocate.city || "",
-          advocate.degree || "",
-          (advocate.specialties || []).join(" "),
-          advocate.yearsOfExperience || "",
-          advocate.phoneNumber || "",
-        ];
+      const searchTerm = q.toLowerCase().trim();
+      const isNumericSearch = /^\d+$/.test(searchTerm);
+      
+      if (isNumericSearch) {
+        const searchNumber = parseInt(searchTerm);
+        // For numeric searches, prioritize exact years of experience matches
+        deduped = deduped.filter((advocate) => {
+          if (parseInt(advocate.yearsOfExperience || "0") === searchNumber) {
+            return true;
+          }
+          
+          const textFields = [
+            advocate.firstName || "",
+            advocate.lastName || "",
+            advocate.city || "",
+            advocate.degree || "",
+            (advocate.specialties || []).join(" "),
+          ];
 
-        return searchableFields.some((field) =>
-          String(field).toLowerCase().includes(searchTerm)
-        );
-      });
+          return textFields.some((field) =>
+            String(field).toLowerCase().includes(searchTerm)
+          );
+        });
+        
+        deduped.sort((a, b) => {
+          const aExactMatch = parseInt(a.yearsOfExperience || "0") === searchNumber;
+          const bExactMatch = parseInt(b.yearsOfExperience || "0") === searchNumber;
+          
+          if (aExactMatch && !bExactMatch) return -1;
+          if (!aExactMatch && bExactMatch) return 1;
+          return 0;
+        });
+      } else {
+        deduped = deduped.filter((advocate) => {
+          const searchableFields = [
+            advocate.firstName || "",
+            advocate.lastName || "",
+            advocate.city || "",
+            advocate.degree || "",
+            (advocate.specialties || []).join(" "),
+            advocate.yearsOfExperience || "",
+            advocate.phoneNumber || "",
+          ];
+
+          return searchableFields.some((field) =>
+            String(field).toLowerCase().includes(searchTerm)
+          );
+        });
+      }
     }
 
     const withId = deduped.map((r) => ({
