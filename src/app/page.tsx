@@ -1,7 +1,21 @@
 "use client";
 
 import React, { ChangeEvent, useEffect, useRef, useState } from "react";
-import { StickyThead, TableWrapper, TableBody, ActionButton, LoadingContainer, LoadingSpinner, ErrorContainer, NoResultsContainer, SortableHeader } from "./styles";
+import {
+  StickyThead,
+  TableWrapper,
+  TableBody,
+  ActionButton,
+  LoadingContainer,
+  LoadingSpinner,
+  ErrorContainer,
+  NoResultsContainer,
+  SortableHeader,
+  ThemedMain,
+  ThemedTitle,
+  ThemedInput,
+} from "./styles";
+import { useTheme } from "./theme-provider";
 
 type Advocate = {
   id?: string;
@@ -15,7 +29,7 @@ type Advocate = {
 };
 
 type SortField = keyof Advocate;
-type SortDirection = 'asc' | 'desc';
+type SortDirection = "asc" | "desc";
 
 export default function Home() {
   const [advocates, setAdvocates] = useState<Advocate[]>([]);
@@ -23,7 +37,10 @@ export default function Home() {
   const [loading, setLoading] = useState(true); // Start with loading true
   const [error, setError] = useState<string>("");
   const [sortField, setSortField] = useState<SortField | null>(null);
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
+  
+  const { isDarkMode } = useTheme();
 
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -42,7 +59,7 @@ export default function Home() {
       const url = q
         ? `/api/advocates?q=${encodeURIComponent(q)}`
         : "/api/advocates";
-      
+
       const res = await fetch(url, { signal: controller.signal });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
@@ -55,6 +72,9 @@ export default function Home() {
       console.error("Failed to load advocates:", err);
     } finally {
       setLoading(false);
+      if (!hasInitiallyLoaded) {
+        setHasInitiallyLoaded(true);
+      }
     }
   };
 
@@ -88,11 +108,11 @@ export default function Home() {
   const handleSort = (field: SortField) => {
     if (sortField === field) {
       // Toggle direction if clicking the same field
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
       // New field, start with ascending
       setSortField(field);
-      setSortDirection('asc');
+      setSortDirection("asc");
     }
   };
 
@@ -102,27 +122,27 @@ export default function Home() {
     }
     return (
       <span className={`sort-icon active`}>
-        {sortDirection === 'asc' ? '↑' : '↓'}
+        {sortDirection === "asc" ? "↑" : "↓"}
       </span>
     );
   };
 
   const sortedAdvocates = React.useMemo(() => {
     if (!sortField) return advocates;
-    
+
     return [...advocates].sort((a, b) => {
       let aVal = a[sortField];
       let bVal = b[sortField];
-      
+
       // Handle arrays (specialties)
-      if (Array.isArray(aVal)) aVal = aVal.join(', ');
-      if (Array.isArray(bVal)) bVal = bVal.join(', ');
-      
+      if (Array.isArray(aVal)) aVal = aVal.join(", ");
+      if (Array.isArray(bVal)) bVal = bVal.join(", ");
+
       // Convert to strings for comparison
-      const aStr = String(aVal || '').toLowerCase();
-      const bStr = String(bVal || '').toLowerCase();
-      
-      if (sortDirection === 'asc') {
+      const aStr = String(aVal || "").toLowerCase();
+      const bStr = String(bVal || "").toLowerCase();
+
+      if (sortDirection === "asc") {
         return aStr.localeCompare(bStr);
       } else {
         return bStr.localeCompare(aStr);
@@ -131,137 +151,159 @@ export default function Home() {
   }, [advocates, sortField, sortDirection]);
 
   return (
-    <main style={{ margin: "24px" }}>
-      <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-8" style={{ fontFamily: "Mollie Glaston, sans-serif" }}>
-        Solace Advocates
-      </h1>
+    <ThemedMain $isDark={isDarkMode}>
+      <ThemedTitle $isDark={isDarkMode}>Solace Advocates</ThemedTitle>
 
-      <div className="mb-6 w-full">
-        <div className="flex flex-row items-center">
-          <label htmlFor="search"></label>
+        <div className="mb-6 w-full">
+          <div className="flex flex-row items-center">
+            <label htmlFor="search"></label>
 
-          <div className="flex-1 flex items-stretch sm:max-w-[45rem]">
-            <div className="relative flex-1">
-              <input
-                id="search"
-                aria-label="Search Advocates"
-                onChange={onChange}
-                value={searchTerm}
-                placeholder="Enter advocate name, city, specialty, or years of experience here"
-                className="w-full h-10 px-4 pr-12 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
-              />
+            <div className="flex-1 flex items-stretch sm:max-w-[45rem]">
+              <div className="relative flex-1">
+                <ThemedInput
+                  id="search"
+                  aria-label="Search Advocates"
+                  onChange={onChange}
+                  value={searchTerm}
+                  placeholder="Enter advocate name, city, specialty, or years of experience here"
+                  $isDark={isDarkMode}
+                />
 
-              {searchTerm ? (
-                <ActionButton
-                  className="absolute inset-y-0 right-0 px-3 bg-gray-200 text-gray-800 hover:bg-gray-300 rounded-r-md"
-                  onClick={onReset}
-                  type="button"
-                  aria-label="Reset Search"
-                >
-                  ✕
-                </ActionButton>
-              ) : null}
+                {searchTerm ? (
+                  <ActionButton
+                    className="absolute inset-y-0 right-0 px-3 rounded-r-md"
+                    onClick={onReset}
+                    type="button"
+                    aria-label="Reset Search"
+                    $isDark={isDarkMode}
+                    style={{
+                      position: "absolute",
+                      right: 0,
+                      top: 0,
+                      height: "100%",
+                      borderRadius: "0 0.375rem 0.375rem 0",
+                    }}
+                  >
+                    ✕
+                  </ActionButton>
+                ) : null}
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <TableWrapper>
-        {loading && advocates.length === 0 ? (
-          <LoadingContainer>
-            <LoadingSpinner />
-            Loading advocates...
-          </LoadingContainer>
-        ) : error ? (
-          <ErrorContainer>
-            {error}
-          </ErrorContainer>
-        ) : advocates.length === 0 ? (
-          <NoResultsContainer>
-            <span className="emoji">🔍</span>
-            <div className="message">No advocates found</div>
-            <div className="suggestion">
-              {searchTerm 
-                ? `Try adjusting your search term "${searchTerm}" or clear the search to see all advocates.`
-                : "No advocates are currently available."
-              }
-            </div>
-          </NoResultsContainer>
-        ) : (
-          <table>
-            <StickyThead>
-              <tr>
-                <SortableHeader onClick={() => handleSort('firstName')}>
-                  <div className="sort-content">
-                    <span>First Name</span>
-                    {getSortIcon('firstName')}
-                  </div>
-                </SortableHeader>
-                <SortableHeader onClick={() => handleSort('lastName')}>
-                  <div className="sort-content">
-                    <span>Last Name</span>
-                    {getSortIcon('lastName')}
-                  </div>
-                </SortableHeader>
-                <SortableHeader onClick={() => handleSort('city')}>
-                  <div className="sort-content">
-                    <span>City</span>
-                    {getSortIcon('city')}
-                  </div>
-                </SortableHeader>
-                <SortableHeader onClick={() => handleSort('degree')}>
-                  <div className="sort-content">
-                    <span>Degree</span>
-                    {getSortIcon('degree')}
-                  </div>
-                </SortableHeader>
-                <SortableHeader onClick={() => handleSort('specialties')}>
-                  <div className="sort-content">
-                    <span>Specialties</span>
-                    {getSortIcon('specialties')}
-                  </div>
-                </SortableHeader>
-                <SortableHeader onClick={() => handleSort('yearsOfExperience')}>
-                  <div className="sort-content">
-                    <span>Years of Experience</span>
-                    {getSortIcon('yearsOfExperience')}
-                  </div>
-                </SortableHeader>
-                <SortableHeader onClick={() => handleSort('phoneNumber')}>
-                  <div className="sort-content">
-                    <span>Phone Number</span>
-                    {getSortIcon('phoneNumber')}
-                  </div>
-                </SortableHeader>
-              </tr>
-            </StickyThead>
-            <TableBody>
-              {sortedAdvocates.map((advocate, idx) => {
-                const rowKey =
-                  advocate.id ??
-                  `${advocate.phoneNumber ?? ""}-${
-                    advocate.lastName ?? "x"
-                  }-${idx}`;
-                return (
-                  <tr key={rowKey}>
-                    <td>{advocate.firstName}</td>
-                    <td>{advocate.lastName}</td>
-                    <td>{advocate.city}</td>
-                    <td>{advocate.degree}</td>
-                    <td>
-                      {advocate.specialties.map((s, i) => (
-                        <div key={`${rowKey}-spec-${i}`}>{s}</div>
-                      ))}
-                    </td>
-                    <td>{advocate.yearsOfExperience}</td>
-                    <td>{advocate.phoneNumber}</td>
-                  </tr>
-                );
-              })}
-            </TableBody>
-          </table>
-        )}
-      </TableWrapper>
-    </main>
+        <TableWrapper $isDark={isDarkMode}>
+          {loading ? (
+            <LoadingContainer $isDark={isDarkMode}>
+              <LoadingSpinner $isDark={isDarkMode} />
+              Loading advocates...
+            </LoadingContainer>
+          ) : error ? (
+            <ErrorContainer $isDark={isDarkMode}>{error}</ErrorContainer>
+          ) : advocates.length === 0 && hasInitiallyLoaded && searchTerm ? (
+            <NoResultsContainer $isDark={isDarkMode}>
+              <span className="emoji">🔍</span>
+              <div className="message">No advocates found</div>
+              <div className="suggestion">
+                Try adjusting your search term "{searchTerm}" or clear the search to see all advocates.
+              </div>
+            </NoResultsContainer>
+          ) : advocates.length > 0 ? (
+            <table>
+              <StickyThead $isDark={isDarkMode}>
+                <tr>
+                  <SortableHeader
+                    $isDark={isDarkMode}
+                    onClick={() => handleSort("firstName")}
+                  >
+                    <div className="sort-content">
+                      <span>First Name</span>
+                      {getSortIcon("firstName")}
+                    </div>
+                  </SortableHeader>
+                  <SortableHeader
+                    $isDark={isDarkMode}
+                    onClick={() => handleSort("lastName")}
+                  >
+                    <div className="sort-content">
+                      <span>Last Name</span>
+                      {getSortIcon("lastName")}
+                    </div>
+                  </SortableHeader>
+                  <SortableHeader
+                    $isDark={isDarkMode}
+                    onClick={() => handleSort("city")}
+                  >
+                    <div className="sort-content">
+                      <span>City</span>
+                      {getSortIcon("city")}
+                    </div>
+                  </SortableHeader>
+                  <SortableHeader
+                    $isDark={isDarkMode}
+                    onClick={() => handleSort("degree")}
+                  >
+                    <div className="sort-content">
+                      <span>Degree</span>
+                      {getSortIcon("degree")}
+                    </div>
+                  </SortableHeader>
+                  <SortableHeader
+                    $isDark={isDarkMode}
+                    onClick={() => handleSort("specialties")}
+                  >
+                    <div className="sort-content">
+                      <span>Specialties</span>
+                      {getSortIcon("specialties")}
+                    </div>
+                  </SortableHeader>
+                  <SortableHeader
+                    $isDark={isDarkMode}
+                    onClick={() => handleSort("yearsOfExperience")}
+                  >
+                    <div className="sort-content">
+                      <span>Years of Experience</span>
+                      {getSortIcon("yearsOfExperience")}
+                    </div>
+                  </SortableHeader>
+                  <SortableHeader
+                    $isDark={isDarkMode}
+                    onClick={() => handleSort("phoneNumber")}
+                  >
+                    <div className="sort-content">
+                      <span>Phone Number</span>
+                      {getSortIcon("phoneNumber")}
+                    </div>
+                  </SortableHeader>
+                </tr>
+              </StickyThead>
+              <TableBody $isDark={isDarkMode}>
+                {sortedAdvocates.map((advocate, idx) => {
+                  const rowKey =
+                    advocate.id ??
+                    `${advocate.phoneNumber ?? ""}-${
+                      advocate.lastName ?? "x"
+                    }-${idx}`;
+                  return (
+                    <tr key={rowKey}>
+                      <td>{advocate.firstName}</td>
+                      <td>{advocate.lastName}</td>
+                      <td>{advocate.city}</td>
+                      <td>{advocate.degree}</td>
+                      <td>
+                        {advocate.specialties.map((s, i) => (
+                          <div key={`${rowKey}-spec-${i}`}>{s}</div>
+                        ))}
+                      </td>
+                      <td>{advocate.yearsOfExperience}</td>
+                      <td>{advocate.phoneNumber}</td>
+                    </tr>
+                  );
+                })}
+              </TableBody>
+            </table>
+          ) : null}
+        </TableWrapper>
+      </ThemedMain>
   );
 }
