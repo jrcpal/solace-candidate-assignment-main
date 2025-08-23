@@ -66,10 +66,44 @@ function dedupe(rows: any[]) {
   return out;
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const raw = await db.select().from(advocates);
-    const normalized = asArray(raw).map(normalizeRow);
+    const url = new URL(req.url);
+    const q = (url.searchParams.get("q") || "").trim();
+    const limit = Math.min(Number(url.searchParams.get("limit") || 50), 1000);
+    const offset = Math.max(Number(url.searchParams.get("offset") || 0), 0);
+
+    let rawRows: any[] = [];
+
+    if (q) {
+      const term = `%${q}%`;
+      const sql = `
+        SELECT id, first_name, last_name, city, degree, specialties, years_of_experience, phone_number
+        FROM advocates
+        WHERE first_name ILIKE $1
+          OR last_name ILIKE $1
+          OR city ILIKE $1
+          OR degree ILIKE $1
+          OR specialties::text ILIKE $1
+          OR years_of_experience::text ILIKE $1
+          OR phone_number ILIKE $1
+        ORDER BY last_name
+        LIMIT $2 OFFSET $3
+      `;
+      const res = await (db as any).query(sql, [term, limit, offset]);
+      rawRows = res?.rows ?? res ?? [];
+    } else {
+      const sql = `
+        SELECT id, first_name, last_name, city, degree, specialties, years_of_experience, phone_number
+        FROM advocates
+        ORDER BY last_name
+        LIMIT $1 OFFSET $2
+      `;
+      const res = await (db as any).query(sql, [limit, offset]);
+      rawRows = res?.rows ?? res ?? [];
+    }
+
+    const normalized = asArray(rawRows).map(normalizeRow);
     const deduped = dedupe(normalized);
     const withId = deduped.map((r) => ({
       ...r,
